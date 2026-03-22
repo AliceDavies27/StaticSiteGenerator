@@ -1,6 +1,6 @@
 import unittest
 
-from htmlnode import HTMLNode, LeafNode
+from htmlnode import HTMLNode, LeafNode, ParentNode
 
 
 class TestHTMLNode(unittest.TestCase):
@@ -23,6 +23,31 @@ class TestHTMLNode(unittest.TestCase):
         self.assertEqual(node2.to_html(), "Tagless node")
         node3 = LeafNode("a", "Very suspicious link", { "href": "http://virus.com", "target": "_blank" })
         self.assertEqual(node3.to_html(), '<a href="http://virus.com" target="_blank">Very suspicious link</a>')
+    
+    def test_parent_to_html(self):
+        grandchild_node = LeafNode("b", "grandchild")
+        child_node1 = LeafNode("span", "child")
+        child_node2 = ParentNode("span", [grandchild_node])
+        child_node3 = LeafNode("a", "Rick Roll", { "href": "https://youtube.com/watch?v=dQw4w9WgXcQ" })
+        parent_node1 = ParentNode("div", [child_node1])
+        parent_node2 = ParentNode("div", [child_node2])
+        parent_node3 = ParentNode("div", [child_node2, child_node3])
+        parent_node4 = ParentNode("div", None)
+
+        self.assertEqual(parent_node1.to_html(), "<div><span>child</span></div>")
+        self.assertEqual(
+            parent_node2.to_html(),
+            "<div><span><b>grandchild</b></span></div>"
+        )
+        self.assertEqual(
+            parent_node3.to_html(),
+            '<div><span><b>grandchild</b></span><a href="https://youtube.com/watch?v=dQw4w9WgXcQ">Rick Roll</a></div>'
+        )
+
+        with self.assertRaises(ValueError):
+            parent_node4.to_html()
+
+
 
 if __name__ == "__main__":
     unittest.main()
